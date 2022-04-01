@@ -1,24 +1,30 @@
 resource "aws_ecs_cluster" "web" {
-  name = "${var.project}-cluster"
+  name = "${var.prefix}-cluster"
 
   setting {
     name  = "containerInsights"
     value = "enabled"
   }
 
-  capacity_providers = [
-    "FARGATE",
-    "FARGATE_SPOT"
-  ]
-  tags = var.tags
-
   depends_on = [
     aws_lb.app
   ]
 }
 
+resource "aws_ecs_cluster_capacity_providers" "web" {
+  cluster_name = aws_ecs_cluster.web.name
+
+  capacity_providers = ["FARGATE"]
+
+  default_capacity_provider_strategy {
+    base              = 1
+    weight            = 100
+    capacity_provider = "FARGATE"
+  }
+}
+
 resource "aws_ecs_task_definition" "app" {
-  family        = "${var.project}-task-def"
+  family        = "${var.prefix}-task-def"
   task_role_arn = aws_iam_role.ecs_task.arn
   network_mode  = "awsvpc"
   requires_compatibilities = [
@@ -30,7 +36,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name      = "color"
-      image     = "${aws_ecr_repository.app.repository_url}:v1"
+      image     = "${var.ecr_base_uri}:v1"
       essential = true
       portMappings = [
         {
@@ -64,12 +70,10 @@ resource "aws_ecs_task_definition" "app" {
   depends_on = [
     aws_lb.app
   ]
-
-  tags = var.tags
 }
 
 resource "aws_ecs_service" "app" {
-  name    = "${var.project}-service"
+  name    = "${var.prefix}-service"
   cluster = aws_ecs_cluster.web.id
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
@@ -90,7 +94,7 @@ resource "aws_ecs_service" "app" {
   }
 
   deployment_controller {
-    type = "CODE_DEPLOY"
+    type = "ECS"
   }
 
   health_check_grace_period_seconds = 60
@@ -105,18 +109,15 @@ resource "aws_ecs_service" "app" {
   # ECS Exec用
   enable_execute_command = true
 
-  tags = var.tags
-
   lifecycle {
     ignore_changes = [
       load_balancer,
       desired_count,
-      task_definition,
-      network_configuration,
+      /* task_definition, */
+      /* network_configuration, */
       launch_type,
       platform_version,
       capacity_provider_strategy
     ]
   }
-
 }
