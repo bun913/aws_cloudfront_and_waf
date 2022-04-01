@@ -40,3 +40,6 @@ vpc_endpoint = {
     "com.amazonaws.ap-northeast-1.s3"
   ]
 }
+# TODO: terraform.tfvarsに以下変数を加える(機密情報のためgit管理なし)
+# root_domain = "hoge.com"
+# host_zone_id = "hohohoho"

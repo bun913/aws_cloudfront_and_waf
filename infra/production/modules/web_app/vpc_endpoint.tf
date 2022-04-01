@@ -1,6 +1,6 @@
 # security_group
 resource "aws_security_group" "allow_https_inbound" {
-  name        = "${var.project}-allow-inbound-https"
+  name        = "${var.prefix}-allow-inbound-https"
   description = "Allow HTTPS inbound"
   vpc_id      = var.vpc_id
 
@@ -11,7 +11,6 @@ resource "aws_security_group" "allow_https_inbound" {
     protocol    = "tcp"
     cidr_blocks = [var.vpc_cidr]
   }
-  tags = var.tags
 }
 # policy
 data "aws_iam_policy_document" "vpc_endpoint" {

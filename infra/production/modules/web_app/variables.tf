@@ -1,7 +1,4 @@
-variable "project" {
-  type = string
-}
-variable "alb_name" {
+variable "prefix" {
   type = string
 }
 variable "vpc_id" {
@@ -12,6 +9,10 @@ variable "alb_subnets" {
 }
 variable "private_subnets" {
   type = list(string)
+}
+variable "ecr_base_uri" {
+  type        = string
+  description = "globalで作成したECRのリポジトリのベースURL"
 }
 variable "tags" {
   type        = map(any)
@@ -36,10 +37,22 @@ variable "vpc_cidr" {
   type = string
 }
 
-variable "container_image_url" {
+variable "region" {
   type = string
 }
 
-variable "region" {
-  type = string
+variable "root_domain" {
+  type        = string
+  description = "RootDomain"
+}
+
+variable "host_zone_id" {
+  type        = string
+  description = "global配下で作成したRoute53のホストゾーンID"
+  sensitive   = true
+}
+
+variable "acm_arn" {
+  type        = string
+  description = "ALB用のACMのARN"
 }

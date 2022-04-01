@@ -13,8 +13,8 @@ resource "aws_acm_certificate" "cert" {
   }
 }
 
-resource "aws_acm_certificate" "cert_sub" {
-  domain_name       = "auth.${var.root_domain}"
+resource "aws_acm_certificate" "cert_cloudfront" {
+  domain_name       = "cdn.${var.root_domain}"
   validation_method = "DNS"
   provider          = aws.virginia
   lifecycle {

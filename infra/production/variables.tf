@@ -38,3 +38,15 @@ variable "vpc_endpoint" {
   type        = map(any)
   description = "vpc_endpoint_setting"
 }
+
+variable "host_zone_id" {
+  type        = string
+  description = "globalで作成したRoute53のホストゾーンID"
+  sensitive   = true
+}
+
+variable "root_domain" {
+  type        = string
+  description = "RootDomain"
+  sensitive   = true
+}
