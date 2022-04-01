@@ -25,6 +25,13 @@ module "network" {
   tags = var.tags
 }
 
+module "cert" {
+  source = "./modules/cert/"
+
+  root_domain  = var.root_domain
+  host_zone_id = var.host_zone_id
+}
+
 /* module "web_app" { */
 /*   source = "./modules/web_app/" */
 
