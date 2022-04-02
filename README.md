@@ -56,3 +56,16 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+##　動作確認
+
+### WAFが適用されているか確認
+
+```bash
+# これなら帰ってくる
+curl --location --request GET 'https://alb.pr-bun.com' \
+--header 'User-Agent: test'
+# これはステータスコード403でレスポンス
+curl --location --request GET 'https://alb.pr-bun.com' -H 'User-Agent: '
+```
+

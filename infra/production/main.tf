@@ -36,10 +36,10 @@ module "cert" {
 module "web_app" {
   source = "./modules/web_app/"
 
-  prefix      = local.default_prefix
-  vpc_id      = module.network.vpc_id
-  alb_subnets = module.network.alb_subnet_ids
-  acm_arn     = module.cert.acm_alb_arn
+  prefix       = local.default_prefix
+  vpc_id       = module.network.vpc_id
+  alb_subnets  = module.network.alb_subnet_ids
+  acm_arn      = module.cert.acm_alb_arn
   ecr_base_uri = local.ecr_repo_uri
 
   vpc_cidr               = var.vpc.cidr_block
