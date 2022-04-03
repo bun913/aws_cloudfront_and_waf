@@ -4,19 +4,11 @@ resource "aws_security_group" "ingress_all" {
   vpc_id      = var.vpc_id
 
   ingress {
-    description = "HTTPS from all"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTP from all to prd"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    description     = "HTTPS from all"
+    from_port       = 443
+    to_port         = 443
+    protocol        = "tcp"
+    prefix_list_ids = [data.aws_ec2_managed_prefix_list.cloudfront.id]
   }
 
   egress {
@@ -24,6 +16,15 @@ resource "aws_security_group" "ingress_all" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# CloudFront経由でのアクセスに制限するためのプレフィックスリスト
+# https://dev.classmethod.jp/articles/amazon-cloudfront-managed-prefix-list/
+data "aws_ec2_managed_prefix_list" "cloudfront" {
+  filter {
+    name   = "prefix-list-name"
+    values = ["com.amazonaws.global.cloudfront.origin-facing"]
   }
 }
 
