@@ -56,3 +56,8 @@ variable "acm_arn" {
   type        = string
   description = "ALB用のACMのARN"
 }
+
+variable "cloudfront_acm_arn" {
+  type        = string
+  description = "CloudFront用のACMのARM"
+}

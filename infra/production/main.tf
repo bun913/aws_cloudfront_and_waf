@@ -51,6 +51,8 @@ module "web_app" {
   root_domain  = var.root_domain
   host_zone_id = var.host_zone_id
 
+  cloudfront_acm_arn = module.cert.acm_cloudfront_arn
+
   region = var.region
 
   tags = var.tags
