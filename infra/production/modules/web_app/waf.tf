@@ -1,7 +1,13 @@
+# TODO: providerをRoute53でも作っているため少し冗長なので直す
+provider "aws" {
+  alias  = "virginia"
+  region = "us-east-1"
+}
 resource "aws_wafv2_web_acl" "main" {
   name        = "${var.prefix}-app-acl"
   description = "Web ACL for ${var.prefix}-app"
-  scope       = "REGIONAL"
+  scope       = "CLOUDFRONT"
+  provider    = aws.virginia
 
   default_action {
     allow {}
@@ -24,7 +30,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "AWSManagedRulesCommonRuleSetMetric"
       sampled_requests_enabled   = false
     }
@@ -47,7 +53,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "AWSManagedRulesKnownBadInputsRuleSetMetric"
       sampled_requests_enabled   = false
     }
@@ -69,7 +75,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "AWSManagedRulesAmazonIpReputationListMetric"
       sampled_requests_enabled   = false
     }
@@ -91,7 +97,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "AWSManagedRulesAnonymousIpListMetric"
       sampled_requests_enabled   = false
     }
@@ -113,7 +119,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "AWSManagedRulesSQLiRuleSetMetric"
       sampled_requests_enabled   = false
     }
@@ -135,7 +141,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "AWSManagedRulesLinuxRuleSetMetric"
       sampled_requests_enabled   = false
     }
@@ -157,7 +163,7 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "AWSManagedRulesUnixRuleSetMetric"
       sampled_requests_enabled   = false
     }
@@ -185,20 +191,26 @@ resource "aws_wafv2_web_acl" "main" {
     }
 
     visibility_config {
-      cloudwatch_metrics_enabled = false
+      cloudwatch_metrics_enabled = true
       metric_name                = "AWSRateBasedRuleMetric"
       sampled_requests_enabled   = false
     }
   }
 
   visibility_config {
-    cloudwatch_metrics_enabled = false
+    cloudwatch_metrics_enabled = true
     metric_name                = "TerraformWebACLMetric"
     sampled_requests_enabled   = false
   }
 }
 
-resource "aws_wafv2_web_acl_association" "main" {
-  resource_arn = aws_lb.app.arn
-  web_acl_arn  = aws_wafv2_web_acl.main.arn
+# NOTE: アクセス数がそれなりのサービスだとCloudWatchLogsに出力するとコストが嵩む
+# Firehose経由でS3への配信も考慮が必要
+resource "aws_wafv2_web_acl_logging_configuration" "main" {
+  log_destination_configs = [aws_cloudwatch_log_group.waf.arn]
+  provider                = aws.virginia
+  resource_arn            = aws_wafv2_web_acl.main.arn
+  redacted_fields {
+    uri_path {}
+  }
 }

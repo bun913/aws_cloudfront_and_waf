@@ -43,8 +43,9 @@ resource "aws_cloudfront_distribution" "asset" {
   aliases = [
     "cdn.${var.root_domain}"
   ]
+  web_acl_id = aws_wafv2_web_acl.main.arn
   origin {
-    domain_name = aws_lb.app.dns_name
+    domain_name = "alb.${var.root_domain}"
     origin_id   = aws_lb.app.id
     custom_origin_config {
       http_port                = 80
