@@ -2,12 +2,23 @@
 
 ## 構成
 
-WIP
+![構成図](/infra/docs/images/system_archi.png)
+
+ユーザーのアクセスを WAF -> CloudFront -> ALB(静的アセットはS3) となるように設定する。
+
+この構成のメリット
+
+- WAFで不審なアクセスを遮断
+- CloudFrontでDDOS攻撃対策
 
 ## 今回のスコープ
 
 ### やること
 
+- ECSでサンプルアプリを稼働させる
+- ALBの前にCloudFrontを配置。最近使えるようになったManagedPrefixListでALBへのアクセスをCloudFrontに制限
+  - https://blog.serverworks.co.jp/2022/02/09/cloudfront_aws_managed_prefix_list
+- WAFをCloudFrontの前に配置。とりあえずMangedRuleで不審な通信を遮断する
 
 ### やらないこと
 
@@ -63,9 +74,20 @@ terraform apply
 
 ```bash
 # これなら帰ってくる
-curl --location --request GET 'https://alb.pr-bun.com' \
+curl --location --request GET 'https://cdn.hoge.com' \
 --header 'User-Agent: test'
 # これはステータスコード403でレスポンス
-curl --location --request GET 'https://alb.pr-bun.com' -H 'User-Agent: '
+curl --location --request GET 'https://cdn.hoge.com' -H 'User-Agent: '
 ```
 
+### ALBへのアクセスはCloudFront経由でしかできないことを確認
+
+```
+# CloudFront経由はアクセスできる
+curl --location --request GET 'https://cdn.hoge.com' \
+--header 'User-Agent: test'
+
+# ALBのドメイン名直はアクセスできない
+curl --location --request GET 'https://alb.hoge.com' \
+--header 'User-Agent: test'
+```
