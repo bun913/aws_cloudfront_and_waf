@@ -82,7 +82,7 @@ curl --location --request GET 'https://cdn.hoge.com' -H 'User-Agent: '
 
 ### ALBへのアクセスはCloudFront経由でしかできないことを確認
 
-```
+```bash
 # CloudFront経由はアクセスできる
 curl --location --request GET 'https://cdn.hoge.com' \
 --header 'User-Agent: test'
@@ -90,4 +90,13 @@ curl --location --request GET 'https://cdn.hoge.com' \
 # ALBのドメイン名直はアクセスできない
 curl --location --request GET 'https://alb.hoge.com' \
 --header 'User-Agent: test'
+```
+
+### S3へのアクセスはCDN経由でしかできないことを確認
+
+```bash
+# CloudFront経由はアクセスできる
+curl --location --request GET https://hoge.com/static/test.json
+# S3直接はアクセスできない
+curl --location --request GET https://${S3のDNS名}/static/test.json
 ```

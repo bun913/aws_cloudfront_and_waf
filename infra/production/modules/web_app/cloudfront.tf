@@ -35,8 +35,6 @@ resource "aws_cloudfront_response_headers_policy" "asset" {
   }
 }
 
-# TODO: S3を作ってい /static/ 以下のパスをS3にルーティングするように設定する
-
 # Cloudfront
 resource "aws_cloudfront_distribution" "asset" {
   enabled = true
@@ -55,10 +53,17 @@ resource "aws_cloudfront_distribution" "asset" {
       origin_read_timeout      = 60
       origin_ssl_protocols     = ["TLSv1", "TLSv1.1", "TLSv1.2"]
     }
-    /* s3_origin_config { */
-    /*   origin_access_identity = aws_cloudfront_origin_access_identity.oai.cloudfront_access_identity_path */
-    /* } */
   }
+
+  origin {
+    domain_name = aws_s3_bucket.static.bucket_regional_domain_name
+    origin_id   = aws_s3_bucket.static.id
+
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_identity.static.cloudfront_access_identity_path
+    }
+  }
+
   viewer_certificate {
     cloudfront_default_certificate = false
     acm_certificate_arn            = var.cloudfront_acm_arn
@@ -81,9 +86,31 @@ resource "aws_cloudfront_distribution" "asset" {
 
     viewer_protocol_policy = "redirect-to-https"
     min_ttl                = 0
-    default_ttl            = 0
-    max_ttl                = 0
+    default_ttl            = 10
+    max_ttl                = 60
   }
+
+  ordered_cache_behavior {
+    path_pattern     = "/static/*"
+    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
+    cached_methods   = ["GET", "HEAD", "OPTIONS"]
+    target_origin_id = aws_s3_bucket.static.id
+
+    forwarded_values {
+      query_string = false
+      headers      = ["Origin"]
+      cookies {
+        forward = "none"
+      }
+    }
+
+    min_ttl                = 0
+    default_ttl            = 300
+    max_ttl                = 600
+    compress               = true
+    viewer_protocol_policy = "redirect-to-https"
+  }
+
   restrictions {
     geo_restriction {
       restriction_type = "whitelist"
@@ -91,3 +118,5 @@ resource "aws_cloudfront_distribution" "asset" {
     }
   }
 }
+
+resource "aws_cloudfront_origin_access_identity" "static" {}
