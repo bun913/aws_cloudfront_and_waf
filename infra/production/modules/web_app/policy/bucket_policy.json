@@ -1,0 +1,11 @@
+{
+  "Statement": {
+    "Sid": "1",
+    "Effect": "Allow",
+    "Principal": {
+      "AWS": "${OAI}"
+    },
+    "Action": "s3:GetObject",
+    "Resource": "${BUCKET_ARN}/*"
+  }
+}
